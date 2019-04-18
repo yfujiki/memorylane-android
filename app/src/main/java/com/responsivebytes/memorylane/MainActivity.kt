@@ -18,6 +18,10 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import permissions.dispatcher.*
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.CameraUpdate
+
+
 
 @RuntimePermissions
 class MainActivity : AppCompatActivity() {
@@ -26,9 +30,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private lateinit var mapFragment: SupportMapFragment
-    private lateinit var map: GoogleMap
-    private lateinit var currentLocationMarker: Marker
     private lateinit var apiClient: GoogleApiClient
+
+    private var map: GoogleMap? = null
+    private var currentLocationMarker: Marker? = null
     private var currentLocation: LatLng? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,10 +86,10 @@ class MainActivity : AppCompatActivity() {
     fun configureMapControls() {
         mapFragment.getMapAsync {
             map = it
-            map.isMyLocationEnabled = true
-            map.uiSettings.isCompassEnabled = true
-            map.uiSettings.isMyLocationButtonEnabled = true
-            map.uiSettings.isZoomControlsEnabled = true
+            map?.isMyLocationEnabled = true
+            map?.uiSettings?.isCompassEnabled = true
+            map?.uiSettings?.isMyLocationButtonEnabled = true
+            map?.uiSettings?.isZoomControlsEnabled = true
 
             addMarkerToCurrentLocation()
         }
@@ -95,7 +100,10 @@ class MainActivity : AppCompatActivity() {
             val markerOptions = MarkerOptions()
             markerOptions.position(it)
             markerOptions.title("CurrentLocation")
-            currentLocationMarker = map.addMarker(markerOptions)
+            currentLocationMarker = map?.addMarker(markerOptions)
+
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(it, 10f)
+            map?.animateCamera(cameraUpdate)
         }
     }
 

@@ -7,17 +7,26 @@ import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.MapView
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import permissions.dispatcher.*
 
 @RuntimePermissions
 class MainActivity : AppCompatActivity() {
     companion object {
-        val TAG = MainActivity.javaClass.canonicalName
+        private val TAG = MainActivity.javaClass.canonicalName
+        private val SINGAPORE = LatLng(1.3058, 103.8275)
     }
 
-    lateinit var mapFragment: SupportMapFragment
+    private lateinit var mapFragment: SupportMapFragment
+    private lateinit var map: GoogleMap
+    private lateinit var currentLocationMarker: Marker
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,13 +37,20 @@ class MainActivity : AppCompatActivity() {
         configureMapControlsWithPermissionCheck()
     }
 
+
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     fun configureMapControls() {
         mapFragment.getMapAsync {
-            it.isMyLocationEnabled = true
-            it.uiSettings.isCompassEnabled = true
-            it.uiSettings.isMyLocationButtonEnabled = true
-            it.uiSettings.isIndoorLevelPickerEnabled = true
+            map = it
+            map.isMyLocationEnabled = true
+            map.uiSettings.isCompassEnabled = true
+            map.uiSettings.isMyLocationButtonEnabled = true
+            map.uiSettings.isZoomControlsEnabled = true
+
+            val markerOptions = MarkerOptions()
+            markerOptions.position(MainActivity.SINGAPORE)
+            markerOptions.title("Singapore")
+            currentLocationMarker = map.addMarker(markerOptions)
         }
     }
 

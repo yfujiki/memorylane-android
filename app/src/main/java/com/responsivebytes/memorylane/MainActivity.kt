@@ -1,15 +1,17 @@
 package com.responsivebytes.memorylane
 
 import android.Manifest
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.MapView
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -21,12 +23,13 @@ import permissions.dispatcher.*
 class MainActivity : AppCompatActivity() {
     companion object {
         private val TAG = MainActivity.javaClass.canonicalName
-        private val SINGAPORE = LatLng(1.3058, 103.8275)
     }
 
     private lateinit var mapFragment: SupportMapFragment
     private lateinit var map: GoogleMap
     private lateinit var currentLocationMarker: Marker
+    private lateinit var apiClient: GoogleApiClient
+    private var currentLocation: LatLng? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,11 +37,47 @@ class MainActivity : AppCompatActivity() {
 
         mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
 
-        configureMapControlsWithPermissionCheck()
+        prepareGoogleApi()
+
+        operationsWithLocationWithPermissionCheck()
     }
 
+    fun prepareGoogleApi() {
+        val connectionCallbacks = object: GoogleApiClient.ConnectionCallbacks {
+            override fun onConnected(p0: Bundle?) {
+            }
+            override fun onConnectionSuspended(p0: Int) {
+            }
+        }
+        apiClient = GoogleApiClient.Builder(this).addApi(LocationServices.API).addConnectionCallbacks(connectionCallbacks).build()
+        apiClient.connect()
+    }
 
     @NeedsPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    fun operationsWithLocation() {
+        configureMapControls()
+        queryForLocation()
+    }
+
+    fun queryForLocation() {
+        val request = LocationRequest.create()
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+        request.setNumUpdates(1)
+        request.setInterval(0)
+
+        var locationCallback = object: LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                currentLocation = LatLng(result.lastLocation.latitude, result.lastLocation.longitude)
+                addMarkerToCurrentLocation()
+            }
+            override fun onLocationAvailability(var1: LocationAvailability) {
+
+            }
+        }
+
+        LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
+    }
+
     fun configureMapControls() {
         mapFragment.getMapAsync {
             map = it
@@ -47,9 +86,15 @@ class MainActivity : AppCompatActivity() {
             map.uiSettings.isMyLocationButtonEnabled = true
             map.uiSettings.isZoomControlsEnabled = true
 
+            addMarkerToCurrentLocation()
+        }
+    }
+
+    fun addMarkerToCurrentLocation() {
+        currentLocation?.let {
             val markerOptions = MarkerOptions()
-            markerOptions.position(MainActivity.SINGAPORE)
-            markerOptions.title("Singapore")
+            markerOptions.position(it)
+            markerOptions.title("CurrentLocation")
             currentLocationMarker = map.addMarker(markerOptions)
         }
     }

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">MemoryLane</string>
+    <string name="permission_location_denied">Location Permission Denied</string>
+    <string name="permission_location_never_ask_again">Never Ask Location Permission Again</string>
+    <string name="button_allow">Allow</string>
+    <string name="button_deny">Deny</string>
+    <string name="permission_location_rational">We need to access your current location to remember that for you.</string>
 </resources>

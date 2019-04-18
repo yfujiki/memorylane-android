@@ -14,6 +14,8 @@
                 android:name="com.google.android.geo.API_KEY"
                 android:value="AIzaSyC3s10CbO6oKwQ3aa1UgKony9eCD2LWFXg"/>
 
+        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
